@@ -4,7 +4,7 @@
   "description": "Grande toile collaborative persistante avec rôles passager et admin.",
   "private": true,
   "scripts": {
-    "start": "python3 -m http.server 4173",
-    "check": "node --check src/main.js"
+    "start": "node server.js",
+    "check": "node --check src/main.js && node --check server.js"
   }
 }

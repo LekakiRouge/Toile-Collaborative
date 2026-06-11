@@ -11,6 +11,7 @@ const state = {
   color: '#5b5cf6',
   size: 8,
   drawings: [],
+  lastUpdatedAt: null,
   draft: null,
   selectedDrawingId: null,
   dragOffset: { x: 0, y: 0 },
@@ -46,9 +47,9 @@ const context = elements.drawingCanvas.getContext('2d');
 
 init();
 
-function init() {
+async function init() {
   elements.canvasIdLabel.textContent = state.canvasId;
-  state.drawings = loadDrawings();
+  await refreshDrawingsFromServer();
 
   const savedIdentity = loadIdentity();
   if (savedIdentity) {
@@ -79,12 +80,7 @@ function init() {
   elements.drawingCanvas.addEventListener('pointerup', handlePointerUp);
   elements.drawingCanvas.addEventListener('pointerleave', handlePointerUp);
 
-  window.addEventListener('storage', (event) => {
-    if (event.key === storageKey('drawings')) {
-      state.drawings = loadDrawings();
-      render();
-    }
-  });
+  window.setInterval(refreshDrawingsFromServer, 2500);
 
   render();
 }
@@ -120,13 +116,44 @@ function saveIdentity(identity) {
   localStorage.setItem(storageKey('identity'), JSON.stringify(identity));
 }
 
-function loadDrawings() {
-  const rawDrawings = localStorage.getItem(storageKey('drawings'));
-  return rawDrawings ? JSON.parse(rawDrawings) : [];
+async function refreshDrawingsFromServer() {
+  if (state.draft) return;
+
+  try {
+    const canvas = await requestCanvas();
+    if (canvas.updatedAt !== state.lastUpdatedAt || state.drawings.length !== canvas.drawings.length) {
+      state.drawings = canvas.drawings;
+      state.lastUpdatedAt = canvas.updatedAt;
+      render();
+    }
+  } catch {
+    showNotice('Impossible de synchroniser avec le serveur.');
+  }
 }
 
-function saveDrawings() {
-  localStorage.setItem(storageKey('drawings'), JSON.stringify(state.drawings));
+async function requestCanvas() {
+  const response = await fetch(`/api/canvases/${encodeURIComponent(state.canvasId)}`);
+  if (!response.ok) throw new Error('Lecture serveur impossible.');
+  return response.json();
+}
+
+async function saveDrawings() {
+  try {
+    const response = await fetch(`/api/canvases/${encodeURIComponent(state.canvasId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: state.canvasId, drawings: state.drawings }),
+    });
+
+    if (!response.ok) throw new Error('Sauvegarde serveur impossible.');
+    const canvas = await response.json();
+    state.lastUpdatedAt = canvas.updatedAt;
+    state.drawings = canvas.drawings;
+  } catch {
+    showNotice('La sauvegarde serveur a échoué. Réessaie dans quelques secondes.');
+  } finally {
+    render();
+  }
 }
 
 function handleIdentitySubmit(event) {
