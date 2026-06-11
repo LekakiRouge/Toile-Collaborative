@@ -232,7 +232,7 @@ legend {
   border: 1px solid #d1d5db;
   border-radius: 24px;
   min-height: 70vh;
-  overflow: hidden;
+  overflow: auto;
   padding: 1rem;
   position: relative;
 }
@@ -241,48 +241,9 @@ canvas {
   background: white;
   border-radius: 18px;
   box-shadow: 0 20px 70px rgba(15, 23, 42, 0.15);
-  cursor: crosshair;
   display: block;
-  height: clamp(560px, 72vh, 920px);
   max-width: 100%;
   touch-action: none;
-  width: 100%;
-}
-
-canvas.is-pan-ready,
-canvas.is-panning {
-  cursor: grab;
-}
-
-canvas.is-panning {
-  cursor: grabbing;
-}
-
-.zoom-controls {
-  align-items: center;
-  display: grid;
-  gap: 0.45rem;
-  grid-template-columns: auto 1fr auto;
-}
-
-.zoom-controls #zoomResetButton {
-  grid-column: 1 / -1;
-}
-
-#zoomLabel {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-weight: 900;
-  padding: 0.65rem;
-  text-align: center;
-}
-
-.tool-hint {
-  color: #64748b;
-  font-size: 0.82rem;
-  line-height: 1.35;
-  margin: -0.3rem 0 0;
 }
 
 .canvas-notice {

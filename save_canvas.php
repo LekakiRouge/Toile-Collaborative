@@ -16,11 +16,7 @@ try {
         exit;
     }
 
-    $body = (string) ($_POST['payload'] ?? '');
-    if ($body === '') {
-        $body = file_get_contents('php://input', false, null, 0, MAX_BODY_SIZE + 1);
-    }
-
+    $body = file_get_contents('php://input', false, null, 0, MAX_BODY_SIZE + 1);
     if ($body === false || strlen($body) > MAX_BODY_SIZE) {
         http_response_code(413);
         echo json_encode(['error' => 'Payload trop volumineux.'], JSON_UNESCAPED_UNICODE);

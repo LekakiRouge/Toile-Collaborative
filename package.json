@@ -1,0 +1,10 @@
+{
+  "name": "toile-collaborative",
+  "version": "1.0.0",
+  "description": "Grande toile collaborative persistante avec rôles passager et admin.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check src/main.js && node --check server.js"
+  }
+}
