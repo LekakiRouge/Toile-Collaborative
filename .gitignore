@@ -1,1 +1,4 @@
-data/
+# Config locale éventuelle
+public/api/db.config.php
+*.log
+.DS_Store
