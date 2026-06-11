@@ -1,9 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/database.php';
+
+$canvasId = sanitize_canvas_id((string) ($_GET['toile'] ?? ''));
+if (!isset($_GET['toile']) || $canvasId === 'toile') {
+    $canvasId = bin2hex(random_bytes(4));
+    header('Location: ?toile=' . rawurlencode($canvasId));
+    exit;
+}
+
+$initialCanvas = ['id' => $canvasId, 'drawings' => [], 'updatedAt' => null];
+$initialError = null;
+
+try {
+    $initialCanvas = fetch_canvas($canvasId);
+} catch (Throwable $error) {
+    error_log($error->getMessage());
+    $initialError = 'Connexion MySQL impossible. Vérifie config.php et la base de données.';
+}
+?>
 <!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Toile collaborative</title>
+    <script>
+      window.TOILE_BOOTSTRAP = <?= json_encode(['canvas' => $initialCanvas, 'error' => $initialError], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+    </script>
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
@@ -90,6 +116,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="./src/main.js"></script>
+    <script src="./src/main.js" defer></script>
   </body>
 </html>
