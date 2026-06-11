@@ -4,7 +4,7 @@ const CANVAS_WIDTH = 1600;
 const CANVAS_HEIGHT = 1000;
 
 const state = {
-  canvasId: window.TOILE_BOOTSTRAP?.canvas?.id || getCanvasId(),
+  canvasId: getCanvasId(),
   identity: null,
   role: 'passenger',
   tool: 'pen',
@@ -49,13 +49,7 @@ init();
 
 async function init() {
   elements.canvasIdLabel.textContent = state.canvasId;
-  hydrateFromBootstrap();
-
-  if (window.TOILE_BOOTSTRAP?.error) {
-    showNotice(window.TOILE_BOOTSTRAP.error);
-  } else {
-    await refreshDrawingsFromServer();
-  }
+  await refreshDrawingsFromServer();
 
   const savedIdentity = loadIdentity();
   if (savedIdentity) {
@@ -122,14 +116,6 @@ function saveIdentity(identity) {
   localStorage.setItem(storageKey('identity'), JSON.stringify(identity));
 }
 
-function hydrateFromBootstrap() {
-  const canvas = window.TOILE_BOOTSTRAP?.canvas;
-  if (!canvas) return;
-
-  state.drawings = Array.isArray(canvas.drawings) ? canvas.drawings : [];
-  state.lastUpdatedAt = canvas.updatedAt || null;
-}
-
 async function refreshDrawingsFromServer() {
   if (state.draft) return;
 
@@ -146,15 +132,15 @@ async function refreshDrawingsFromServer() {
 }
 
 async function requestCanvas() {
-  const response = await fetch(`load_canvas.php?toile=${encodeURIComponent(state.canvasId)}`);
+  const response = await fetch(`/api/canvases/${encodeURIComponent(state.canvasId)}`);
   if (!response.ok) throw new Error('Lecture serveur impossible.');
   return response.json();
 }
 
 async function saveDrawings() {
   try {
-    const response = await fetch('save_canvas.php', {
-      method: 'POST',
+    const response = await fetch(`/api/canvases/${encodeURIComponent(state.canvasId)}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: state.canvasId, drawings: state.drawings }),
     });
